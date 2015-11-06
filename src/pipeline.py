@@ -10,6 +10,10 @@ import json
 import pandas as pd
 import codecs
 import string
+from datetime import datetime, timedelta
+import numpy as np
+import itertools
+from itertools import combinations
 
 class InputTweets(luigi.ExternalTask):
     """
@@ -25,9 +29,6 @@ class InputTweets(luigi.ExternalTask):
         return luigi.LocalTarget(root + self.filename)
 
 class ReadTweets(luigi.Task):
-    '''Extraer texto de los PDFs de un libro,
-    pegarlos en un solo archivo en formato crudo
-    y guardar el resultado'''
     tweet_dir = luigi.Parameter()
 
     def requires(self):
@@ -60,6 +61,48 @@ class ReadTweets(luigi.Task):
 
     def output(self):
         return luigi.LocalTarget('../tweet_output/ft1.txt')
+
+class AverageDegree(luigi.Task):
+    tweet_dir = luigi.Parameter()
+
+    def requires(self):
+            return ReadTweets(self.tweet_dir)
+        
+    def run(self):
+        g=[]
+        today = datetime.strptime('Fri Oct 30 15:32:56 +0000 2015','%a %b %d %H:%M:%S +0000 %Y' )
+
+        with codecs.open('../tweet_output/ft1.txt','rU','utf-8') as data_file:    
+            for line in data_file:
+                    x= {tag.strip() for tag in line.split(' (') if tag.startswith("timestamp")  }
+                    ht={tag.strip("#") for tag in line.split() if tag.startswith("#")}
+                    if x != set():
+                        d= datetime.strptime(x.pop(),'timestamp: %a %b %d %H:%M:%S +0000 %Y)')
+                        if today - d <= timedelta(0,60) and len(ht) >1:
+                            dat={ 'hashtags': list(ht), 'date': d}
+                            g.append(dat)
+        nodes=[]
+        for tweet in g:
+            for ht in tweet.get('hashtags'):
+                nodes.append(ht)
+
+        links=[]
+        for tweet in g:
+            links.append( list(combinations(tweet.get('hashtags'),2)) )
+        
+        print links
+        f = self.output().open('w') 
+        s=0.0
+        for link in links:
+            s = s + len(link)
+            av= s / len(links)
+            f.write(  str( round(  av , 10) ) + '\n') 
+        
+        f.close()
+
+    def output(self):
+        return luigi.LocalTarget('../tweet_output/ft2.txt')
+
 
 if __name__ == '__main__':
     luigi.run()
