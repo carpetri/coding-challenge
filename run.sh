@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+
+# Make sure you have the requierements
+# If not sure run:
+# pip install -r requirements.txt
+
 # This makes sure that the output is gone from the last run.
 make clean
 cd src/
