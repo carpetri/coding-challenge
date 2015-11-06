@@ -15,6 +15,7 @@ import numpy as np
 import itertools
 from itertools import combinations
 
+
 class InputTweets(luigi.ExternalTask):
     """
     This class represents the task to create the tweets that was created elsewhere by an external process,
@@ -64,23 +65,25 @@ class ReadTweets(luigi.Task):
 
 class AverageDegree(luigi.Task):
     tweet_dir = luigi.Parameter()
-
+    
     def requires(self):
             return ReadTweets(self.tweet_dir)
-        
+                   
     def run(self):
         g=[]
         today = datetime.strptime('Fri Oct 30 15:32:56 +0000 2015','%a %b %d %H:%M:%S +0000 %Y' )
+        with open('../tweet_output/ft1.txt' ,'r') as data_file:
+            for line in data_file: 
+                print(line)
+                x= {tag.strip() for tag in line.split(' (') if tag.startswith("Timestamp")  }
+                ht={tag.strip("#") for tag in line.split() if tag.startswith("#")}
+                if x != set():
+                    d= datetime.strptime(x.pop(),'Timestamp: %a %b %d %H:%M:%S +0000 %Y)')
+                    if today - d <= timedelta(0,60) and len(ht) >1:
+                        dat={ 'hashtags': list(ht), 'date': d}
+                        g.append(dat)
+        print(g) 
 
-        with codecs.open('../tweet_output/ft1.txt','rU','utf-8') as data_file:    
-            for line in data_file:
-                    x= {tag.strip() for tag in line.split(' (') if tag.startswith("timestamp")  }
-                    ht={tag.strip("#") for tag in line.split() if tag.startswith("#")}
-                    if x != set():
-                        d= datetime.strptime(x.pop(),'timestamp: %a %b %d %H:%M:%S +0000 %Y)')
-                        if today - d <= timedelta(0,60) and len(ht) >1:
-                            dat={ 'hashtags': list(ht), 'date': d}
-                            g.append(dat)
         nodes=[]
         for tweet in g:
             for ht in tweet.get('hashtags'):
@@ -90,7 +93,7 @@ class AverageDegree(luigi.Task):
         for tweet in g:
             links.append( list(combinations(tweet.get('hashtags'),2)) )
         
-        print links
+        
         f = self.output().open('w') 
         s=0.0
         for link in links:

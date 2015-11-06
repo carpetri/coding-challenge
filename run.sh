@@ -9,13 +9,13 @@ cd src/
 	# 0. Gets the tweets. **In the future this task should run live**.
 	pwd
 	echo 'Geting Tweets ...'
-	#python pipeline.py InputTweets --filename tweets.txt --local-scheduler
+	python pipeline.py InputTweets --filename tweets.txt --local-scheduler
 
 	# 1. Read and clean the tweets
 	echo 'Cleaning Tweets ...'
-	# python pipeline.py ReadTweets --tweet-dir ../tweet_input --local-scheduler
+	python pipeline.py ReadTweets --tweet-dir ../tweet_input --local-scheduler
 
 	# 2. Calculate AverageDegree
 	echo 'Calculate AverageDegree'
-	python pipeline.py AverageDegree --tweet-dir ../tweet_input  --local-scheduler
+	python pipeline.py AverageDegree --tweet-dir ../tweet_input --local-scheduler
 
